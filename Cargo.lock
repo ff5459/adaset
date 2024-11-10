@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "adapter_settings"
+name = "adaset"
 version = "0.1.0"
 dependencies = [
  "pnet",
