@@ -1,1 +1,0 @@
-netsh interface ip set address name="Ethernet" static 123 123 123 && netsh interface ip set dns name="Ethernet" static 123

@@ -1,5 +1,4 @@
 use core::str;
-use std::net::IpAddr;
 use std::process::Command;
 use std::io::{self, Result, Write};
 use std::fs::File;
