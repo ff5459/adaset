@@ -1,9 +1,11 @@
-use pnet::datalink::{self, NetworkInterface};
+use core::str;
+use std::net::IpAddr;
+use std::process::Command;
 use std::io::{self, Result, Write};
 use std::fs::File;
 
 fn main() {
-    let adapters: Vec<NetworkInterface> = get_adapters();
+    let adapters: Vec<String>           = get_adapters();
     let mut adapter_index: String       = String::new();
     let mut file_name: String           = String::new();
     let mut ip: String                  = String::new();
@@ -22,10 +24,10 @@ fn main() {
             return;
         }
     };
-    let adapter = match adapters.get(adapter_index) {
+    let adapter: &String = match adapters.get(adapter_index) {
         Some(adapter) => adapter,
         None => {
-            println!("Ожидалось число от 0 до {}", adapters.len() - 1);
+            println!("Ожидалось число от 0 до {}.", adapters.len() - 1);
             return;
         }
     };
@@ -50,7 +52,7 @@ fn main() {
     io::stdin().read_line(&mut dns).expect("Ошибка чтения DNS.");
     let dns: &str = dns.trim();
 
-    match save_preset(&file_name, &adapter.name, &ip, &mask, &gateway, &dns) {
+    match save_preset(&file_name, &adapter, &ip, &mask, &gateway, &dns) {
         Ok(res) => {
             println!("{res}");
         },
@@ -68,12 +70,28 @@ fn save_preset(file_name: &str, adapter_name: &str, ip: &str, mask: &str, gatewa
     Ok(String::from("Файл успешно записан."))
 }
 
-fn get_adapters() -> Vec<NetworkInterface> {
-    datalink::interfaces()
+fn get_adapters() -> Vec<String> {
+    let output = Command::new("ipconfig")
+        .output()
+        .expect("Ошибка исполнения команды.");
+
+    let output: &str = str::from_utf8(&output.stdout)
+        .expect("Ошибка чтения вывода команды.");
+
+    let mut output = output.lines();
+
+    let mut adapters: Vec<String> = Vec::new();
+    while let Some(line) = output.next() {
+        if line.starts_with("Ethernet adapter") {
+            adapters.push(line[17..line.len() - 1].to_string());
+        }
+    }
+
+    adapters
 }
 
-fn print_adapters(adapters: &Vec<NetworkInterface>) {
+fn print_adapters(adapters: &Vec<String>) {
     for (index, adapter) in adapters.iter().enumerate() {
-        println!("({}) {}", index, adapter.name);
+        println!("({index}) {adapter}");
     }
 }
